@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.16)
 
 project(Vector)
@@ -8,7 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_EXE main.cpp)
 
-set(SOURCE_LIB Vector.cpp)
+set(SOURCE_LIB Vector.cpp Vector.h)
 
 add_library(Vector_lib STATIC ${SOURCE_LIB})
 
