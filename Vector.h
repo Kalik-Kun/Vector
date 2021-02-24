@@ -14,6 +14,7 @@ public:
 
 
 //как сделать еще тип для входящего значения шаблонным я  хз
+
 template<typename Type>
 class MVector {
     private:
@@ -29,8 +30,8 @@ class MVector {
         MVector(const Type* , const int );
         ~MVector();
 
-        const Type* M_get_value(const int );
-        void M_set_value(const Type ,const unsigned int );
+        const Type M_get_value(const int );
+        void M_set_value(const Type ,const  int );
         const int M_len();
         const Type* M_begin();
         const Type* M_end();
@@ -42,41 +43,71 @@ class MVector {
 
 
 //      бинарные операраторы
+// я не знвю почему тут нужно создавать новый шаблон но мне сказали что так работаето а  по другому нет
 
-        friend MVector<Type> operator+ (const MVector<Type>& , const MVector<Type>& );
-        friend MVector<Type> operator- (const MVector<Type>& , const MVector<Type>& );
-        friend MVector<Type> operator* (const MVector<Type>& , const MVector<Type>& );
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator+ (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator- (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator* (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
         MVector<Type>& operator+= (const MVector<Type>& );
         MVector<Type>& operator-= (const MVector<Type>& );
         MVector<Type>& operator*= (const MVector<Type>& );
         MVector<Type>& operator/= (const MVector<Type>& );
-        friend std::ostream& operator<< (std::ostream& , const MVector<Type>&);
-        friend std::istream& operator>> (std::istream& , const MVector<Type>&);
+
+        template<typename opr_Type>
+        friend std::ostream& operator<< (std::ostream& , const MVector<opr_Type>&);
+
+        template<typename opr_Type>
+        friend std::istream& operator>> (std::istream& , MVector<opr_Type>&);
 
 //      убинарные логические операторы
 
-        friend bool operator== (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator!= (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator< (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator<= (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator> (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator>= (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator&& (const MVector<Type>& , const MVector<Type>& );
-        friend bool operator|| (const MVector<Type>& , const MVector<Type>& );
+
+        template<typename opr_Type>
+        friend bool operator== (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator!= (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator< (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator<= (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator> (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator>= (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator&& (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend bool operator|| (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
 
 //      унарные операторы
 
         MVector<Type>& operator+();
-        MVector<Type>& operator-();
+        MVector<Type> operator-();
         MVector<Type>& operator++();
         MVector<Type> operator++(int);
         MVector<Type>& operator--();
         MVector<Type> operator--(int);
 
 //        унарные логические операторы
-        bool operator! ();
+//        bool operator! ();
 
 //      важные сложные операторы для непосредственной раюоты MVector-a
+
+
         MVector<Type>& operator=(const MVector<Type>& );
         Type& operator[](const int );
         const Type& operator[](const int ) const;
@@ -85,7 +116,12 @@ class MVector {
 };
 
 template<typename Type>
-void Mcopy(Type* , Type* ,int );
+void Mcopy(Type* INPUT_VALUE_TO_COPY, Type* INPUT_VALUE_FROM_COPY,int INPUT_SIZE_FOR_COPY) {
+
+    for (int i = 0; i < INPUT_SIZE_FOR_COPY; i ++) {
+        INPUT_VALUE_TO_COPY[i] = INPUT_VALUE_FROM_COPY[i];
+    }
+}
 
 int Mlen(const char *);
 
@@ -164,12 +200,12 @@ MVector<Type>::~MVector() {
 
 
 template<typename Type>
-const Type* MVector<Type>::M_get_value(const int i) {
+const Type MVector<Type>::M_get_value(const int i) {
     return value[i];
 }
 
 template<typename Type>
-void MVector<Type>::M_set_value(const Type Input_value, const unsigned int Numb_cell) {
+void MVector<Type>::M_set_value(const Type Input_value, const int Numb_cell) {
     try {
         if (Numb_cell < SIZE_MVECTOR)
 
@@ -255,3 +291,299 @@ void MVector<Type>::M_pop_back() {
 //}
 
 
+
+
+
+
+
+
+
+
+template<typename opr_Type>
+MVector<opr_Type> operator+ (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+//    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] + second_MVector.value[i];
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
+MVector<opr_Type> operator- (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+//    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] - second_MVector.value[i];
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
+MVector<opr_Type> operator* (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+//    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] * second_MVector.value[i];
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename Type>
+MVector<Type>& MVector<Type>::operator+= (const MVector<Type>& input_MVector) {
+    if (this->SIZE_MVECTOR != input_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++)
+        this->value[i] = this->M_get_value(i) + input_MVector.value[i];
+
+
+
+    return *this;
+}
+
+template<typename Type>
+MVector<Type>& MVector<Type>::operator-= (const MVector<Type>& input_MVector) {
+    if (this->SIZE_MVECTOR != input_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++)
+        this->value[i] = this->value[i] - input_MVector.value[i];
+
+    return *this;
+}
+
+
+template<typename Type>
+MVector<Type>& MVector<Type>::operator*= (const MVector<Type>& input_MVector) {
+    if (this->SIZE_MVECTOR != input_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++)
+        this->value[i] = this->value[i] * input_MVector.value[i];
+
+    return *this;
+}
+
+template<typename Type>
+MVector<Type>& MVector<Type>::operator/= (const MVector<Type>& input_MVector) {
+    if (this->SIZE_MVECTOR != input_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++)
+        this->M_set_value(this->value[i] / input_MVector.value[i], i);
+
+    return *this;
+}
+
+template<typename opr_Type>
+std::ostream& operator<< (std::ostream& out, const MVector<opr_Type>& input_MVector) {
+    out << "Size MVector: " << input_MVector.SIZE_MVECTOR << std::endl;
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++) {
+        out << i << " element of MVector: " << input_MVector.value[i] << std::endl;
+    }
+    return out;
+}
+
+template<typename opr_Type>
+std::istream& operator>> (std::istream& in, MVector<opr_Type>& input_MVector) {
+    for (int i = 0; i < input_MVector.SIZE_MVECTOR; i ++) {
+        opr_Type input_value;
+        in >> input_value;
+        input_MVector.M_set_value(input_value, i);
+    }
+}
+
+
+
+
+template<typename opr_Type>
+bool operator== (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        return false;
+
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i++)
+        if (first_MVector.value[i] != second_MVector.value[i])
+            return false;
+
+    return true;
+}
+
+template<typename opr_Type>
+bool operator!= (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        return true;
+
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        if (first_MVector.value[i] != second_MVector.value[i])
+            return true;
+
+    return false;
+}
+
+template<typename opr_Type>
+bool operator< (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+    if (first_MVector.SIZE_MVECTOR < second_MVector.SIZE_MVECTOR)
+        return true;
+    return false;
+}
+
+template<typename opr_Type>
+bool operator<= (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+    if (first_MVector.SIZE_MVECTOR <= second_MVector.SIZE_MVECTOR)
+        return true;
+    return false;
+}
+
+template<typename opr_Type>
+bool operator> (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+    if (first_MVector.SIZE_MVECTOR > second_MVector.SIZE_MVECTOR)
+        return true;
+    return false;
+}
+
+template<typename opr_Type>
+bool operator>= (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector){
+    if (first_MVector.SIZE_MVECTOR >= second_MVector.SIZE_MVECTOR)
+        return true;
+    return false;
+}
+
+template<typename opr_Type>
+bool operator&& (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+    bool pointer = true;
+
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++) {
+        pointer = pointer && first_MVector.value[i] && second_MVector.value[i];
+    }
+    return pointer;
+}
+
+template<typename opr_Type>
+bool operator|| (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+    bool pointer = false;
+
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++) {
+        pointer = pointer || first_MVector.value[i] || second_MVector.value[i];
+    }
+
+    return pointer;
+}
+
+
+template<typename Type>
+MVector<Type>& MVector<Type>::operator+() {
+    return *this;
+}
+
+template<typename Type>
+MVector<Type> MVector<Type>::operator-() {
+    Type* func_value = new Type[this->SIZE_MVECTOR];
+    for (int i = 0; i < this->SIZE_MVECTOR; i ++)
+        func_value[i] = -this->value[i];
+
+    return MVector<Type>(func_value, this->SIZE_MVECTOR);
+}
+
+//префиксная версия возвращает значение после инкремента
+template<typename Type>
+MVector<Type>& MVector<Type>::operator++() {
+    for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
+        this->value[i] = this->value[i] + 1;
+    }
+    return *this;
+}
+
+//постфиксная версия возвращает значение до инкремента
+template<typename Type>
+MVector<Type> MVector<Type>::operator++(int) {
+    MVector<Type> old_value(this->value);
+
+    for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
+        this->value[i] = this->value[i] + 1;
+    }
+    return old_value;
+}
+
+//префиксная версия возвращает значение после инкремента
+template<typename Type>
+MVector<Type>& MVector<Type>::operator--() {
+    for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
+        this->value[i] = this->value[i] - 1;
+    }
+    return *this;
+}
+
+//постфиксная версия возвращает значение до инкремента
+template<typename Type>
+MVector<Type> MVector<Type>::operator--(int) {
+    MVector<Type> old_value(this->value);
+
+    for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
+        this->value[i] = this->value[i] - 1;
+    }
+    return old_value;
+}
+
+
+// унарный логический оператор
+
+//template<typename Type>
+//bool MVector<Type>::operator!() {
+//
+//    for (int i = 0 ; i < this->SIZE_MVECTOR; i ++) {
+//
+//    }
+//}
+
+
+
+// сложные операторы
+template<typename Type>
+MVector<Type>& MVector<Type>::operator= (const MVector<Type>& input_vector) {
+
+    if (*this == input_vector) {
+        return *this;
+    }
+
+    delete[] this->value;
+    this->value = new Type[input_vector.SIZE_MVECTOR];
+    this->SIZE_MVECTOR = input_vector.SIZE_MVECTOR;
+    this->REAL_SIZE_MVECTOR = input_vector.REAL_SIZE_MVECTOR;
+
+    for (int i = 0; i < input_vector.SIZE_MVECTOR; i ++) {
+        this->value[i] = input_vector.value[i];
+    }
+
+    return *this;
+}
+
+template<typename Type>
+Type& MVector<Type>::operator[](const int input_cell) {
+    return this->value[input_cell];
+}
+
+template<typename Type>
+const Type& MVector<Type>::operator[](const int input_cell) const {
+    return this->value[input_cell];
+}
