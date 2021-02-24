@@ -32,6 +32,7 @@ class MVector {
 
         const Type M_get_value(const int );
         void M_set_value(const Type ,const  int );
+        void M_set_value(const Type* ,const  int );
         const int M_len();
         const Type* M_begin();
         const Type* M_end();
@@ -49,10 +50,25 @@ class MVector {
         friend MVector<opr_Type> operator+ (const MVector<opr_Type>& , const MVector<opr_Type>& );
 
         template<typename opr_Type>
+        friend MVector<opr_Type> operator+ (const MVector<opr_Type>& , const opr_Type );
+
+        template<typename opr_Type>
         friend MVector<opr_Type> operator- (const MVector<opr_Type>& , const MVector<opr_Type>& );
 
         template<typename opr_Type>
+        friend MVector<opr_Type> operator- (const MVector<opr_Type>& , const opr_Type );
+
+        template<typename opr_Type>
         friend MVector<opr_Type> operator* (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator* (const MVector<opr_Type>& , const opr_Type );
+
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator/ (const MVector<opr_Type>& , const MVector<opr_Type>& );
+
+        template<typename opr_Type>
+        friend MVector<opr_Type> operator/ (const MVector<opr_Type>& , const opr_Type );
 
         MVector<Type>& operator+= (const MVector<Type>& );
         MVector<Type>& operator-= (const MVector<Type>& );
@@ -109,6 +125,7 @@ class MVector {
 
 
         MVector<Type>& operator=(const MVector<Type>& );
+//        MVector<Type>& operator=(const Type* );
         Type& operator[](const int );
         const Type& operator[](const int ) const;
 
@@ -206,18 +223,27 @@ const Type MVector<Type>::M_get_value(const int i) {
 
 template<typename Type>
 void MVector<Type>::M_set_value(const Type Input_value, const int Numb_cell) {
-    try {
-        if (Numb_cell < SIZE_MVECTOR)
 
-            value[Numb_cell] = Input_value;
-        else
-            throw "This cell doesn't exist";
+    if (Numb_cell < SIZE_MVECTOR && Numb_cell >= 0)
+
+        value[Numb_cell] = Input_value;
+    else
+        throw MVectorException("This cell doesn't exist");
+}
+template <typename Type>
+
+void MVector<Type>::M_set_value(const Type* Input_array,const  int Size_input_array) {
+    if (Size_input_array < 0)
+        throw MVectorException("there can't be a negative array length");
+
+    SIZE_MVECTOR = Size_input_array;
+    REAL_SIZE_MVECTOR = Size_input_array;
+    delete[] value;
+    value = new Type[SIZE_MVECTOR];
+
+    for (int i = 0; i < SIZE_MVECTOR; i ++) {
+        value[i] = Input_array[i];
     }
-
-    catch (const char* std) {
-        std::cerr << std << std::endl;
-    }
-
 }
 
 template<typename Type>
@@ -316,6 +342,18 @@ MVector<opr_Type> operator+ (const MVector<opr_Type>& first_MVector, const MVect
 }
 
 template<typename opr_Type>
+MVector<opr_Type> operator+ (const MVector<opr_Type>& first_MVector, const opr_Type input_value) {
+
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] + input_value;
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
 MVector<opr_Type> operator- (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
 
 //    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
@@ -332,6 +370,18 @@ MVector<opr_Type> operator- (const MVector<opr_Type>& first_MVector, const MVect
 }
 
 template<typename opr_Type>
+MVector<opr_Type> operator- (const MVector<opr_Type>& first_MVector, const opr_Type input_value) {
+
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] - input_value;
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
 MVector<opr_Type> operator* (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
 
 //    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
@@ -342,6 +392,52 @@ MVector<opr_Type> operator* (const MVector<opr_Type>& first_MVector, const MVect
     opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
     for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
         output_value[i] = first_MVector.value[i] * second_MVector.value[i];
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
+MVector<opr_Type> operator* (const MVector<opr_Type>& first_MVector, const opr_Type input_value) {
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] * input_value;
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
+MVector<opr_Type> operator/ (const MVector<opr_Type>& first_MVector, const MVector<opr_Type>& second_MVector) {
+
+//    assert(first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR && "EROOR: Size input vectors not equal");
+
+    if (first_MVector.SIZE_MVECTOR != second_MVector.SIZE_MVECTOR)
+        throw MVectorException("Input size vectors are not equal");
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++) {
+
+        if (second_MVector.value[i] == 0)
+            throw MVectorException("you can't divide a vector by a zero number");
+
+        output_value[i] = first_MVector.value[i] / second_MVector.value[i];
+    }
+
+
+
+    return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
+}
+
+template<typename opr_Type>
+MVector<opr_Type> operator/ (const MVector<opr_Type>& first_MVector, const opr_Type input_value) {
+
+    if (input_value == 0)
+        throw MVectorException("you can't divide a vector by a zero number");
+
+    opr_Type* output_value = new opr_Type[first_MVector.SIZE_MVECTOR];
+    for (int i = 0; i < first_MVector.SIZE_MVECTOR; i ++)
+        output_value[i] = first_MVector.value[i] / input_value;
 
 
     return MVector<opr_Type>(output_value, first_MVector.SIZE_MVECTOR);
@@ -517,7 +613,7 @@ MVector<Type>& MVector<Type>::operator++() {
 //постфиксная версия возвращает значение до инкремента
 template<typename Type>
 MVector<Type> MVector<Type>::operator++(int) {
-    MVector<Type> old_value(this->value);
+    MVector<Type> old_value(this->value, this->SIZE_MVECTOR);
 
     for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
         this->value[i] = this->value[i] + 1;
@@ -537,7 +633,7 @@ MVector<Type>& MVector<Type>::operator--() {
 //постфиксная версия возвращает значение до инкремента
 template<typename Type>
 MVector<Type> MVector<Type>::operator--(int) {
-    MVector<Type> old_value(this->value);
+    MVector<Type> old_value(this->value, this->SIZE_MVECTOR);
 
     for (int i = 0; i < this->SIZE_MVECTOR; i ++) {
         this->value[i] = this->value[i] - 1;
@@ -577,7 +673,25 @@ MVector<Type>& MVector<Type>::operator= (const MVector<Type>& input_vector) {
 
     return *this;
 }
-
+//
+//template<typename Type>
+//MVector<Type>& MVector<Type>::operator= (const Type*) {
+//
+//    if (*this == input_vector) {
+//        return *this;
+//    }
+//
+//    delete[] this->value;
+//    this->value = new Type[input_vector.SIZE_MVECTOR];
+//    this->SIZE_MVECTOR = input_vector.SIZE_MVECTOR;
+//    this->REAL_SIZE_MVECTOR = input_vector.REAL_SIZE_MVECTOR;
+//
+//    for (int i = 0; i < input_vector.SIZE_MVECTOR; i ++) {
+//        this->value[i] = input_vector.value[i];
+//    }
+//
+//    return *this;
+//}
 template<typename Type>
 Type& MVector<Type>::operator[](const int input_cell) {
     return this->value[input_cell];
